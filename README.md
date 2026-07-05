@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔐 PassGuard
+# 🔐 PwEntropyChecker
 
 ### Password Strength Analyzer — Built on Real Security Engineering, Not Regex Box-Ticking
 
