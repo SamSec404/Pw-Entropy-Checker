@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Password Strength Checker — SamSec404</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #0d1117;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #e6edf3;
+    padding: 20px;
+  }
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 32px;
+    width: 460px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 4px;
+    color: #58a6ff;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: #8b949e;
+    margin-bottom: 20px;
+  }
+  .input-wrap { position: relative; }
+  input {
+    width: 100%;
+    padding: 12px 40px 12px 12px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    color: #e6edf3;
+    font-size: 15px;
+    outline: none;
+  }
+  input:focus { border-color: #58a6ff; }
+  .toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #8b949e;
+    font-size: 13px;
+    user-select: none;
+  }
+  .bar-container {
+    height: 8px;
+    background: #21262d;
+    border-radius: 4px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    transition: width 0.3s ease, background 0.3s ease;
+  }
+  .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 10px;
+  }
+  .label { font-weight: 600; font-size: 15px; }
+  .entropy { font-size: 12px; color: #8b949e; }
+
+  .section {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #21262d;
+  }
+  .section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8b949e;
+    margin-bottom: 8px;
+  }
+  .crack-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 3px 0;
+    color: #c9d1d9;
+  }
+  .crack-row span:last-child { color: #58a6ff; font-weight: 600; }
+
+  ul.warnings { margin: 0; padding: 0; list-style: none; }
+  ul.warnings li {
+    font-size: 13px;
+    color: #f85149;
+    padding: 4px 0;
+    display: flex;
+    gap: 6px;
+  }
+  .no-warnings { font-size: 13px; color: #3fb950; }
+
+  .breach-alert {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .breach-bad { background: rgba(248,81,73,0.15); color: #f85149; border: 1px solid #f85149; }
+  .breach-ok { background: rgba(63,185,80,0.15); color: #3fb950; border: 1px solid #3fb950; }
+  .breach-unknown { background: rgba(139,148,158,0.15); color: #8b949e; border: 1px solid #30363d; }
+
+  .status-line {
+    font-size: 11px;
+    color: #6e7681;
+    margin-top: 14px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>🔐 Password Strength Checker</h1>
+  <div class="subtitle">Entropy-based scoring · Pattern detection · Breach check via HaveIBeenPwned</div>
+
+  <div class="input-wrap">
+    <input type="password" id="pwd" placeholder="Type your password..." autocomplete="off">
+    <span class="toggle" id="toggle">show</span>
+  </div>
+
+  <div class="bar-container"><div class="bar" id="bar"></div></div>
+  <div class="label-row">
+    <div class="label" id="label">Enter a password</div>
+    <div class="entropy" id="entropy"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Estimated Crack Time</div>
+    <div id="crackTimes"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Pattern Analysis</div>
+    <ul class="warnings" id="warnings"></ul>
+  </div>
+
+  <div id="breachSection"></div>
+
+  <div class="status-line" id="status">Waiting for input...</div>
+</div>
+
+<script>
+const API_URL = "http://localhost:8000/check"; // change if backend runs elsewhere
+
+const pwdInput = document.getElementById('pwd');
+const bar = document.getElementById('bar');
+const label = document.getElementById('label');
+const entropyEl = document.getElementById('entropy');
+const crackTimes = document.getElementById('crackTimes');
+const warningsEl = document.getElementById('warnings');
+const breachSection = document.getElementById('breachSection');
+const statusEl = document.getElementById('status');
+const toggle = document.getElementById('toggle');
+
+toggle.addEventListener('click', () => {
+  const isPwd = pwdInput.type === 'password';
+  pwdInput.type = isPwd ? 'text' : 'password';
+  toggle.textContent = isPwd ? 'hide' : 'show';
+});
+
+let debounceTimer;
+pwdInput.addEventListener('input', (e) => {
+  clearTimeout(debounceTimer);
+  const val = e.target.value;
+  if (!val) {
+    resetUI();
+    return;
+  }
+  statusEl.textContent = "Checking...";
+  debounceTimer = setTimeout(() => checkPassword(val), 400); // debounce so we don't spam the API/HIBP on every keystroke
+});
+
+function resetUI() {
+  bar.style.width = '0%';
+  bar.style.background = '#21262d';
+  label.textContent = 'Enter a password';
+  label.style.color = '#8b949e';
+  entropyEl.textContent = '';
+  crackTimes.innerHTML = '';
+  warningsEl.innerHTML = '';
+  breachSection.innerHTML = '';
+  statusEl.textContent = 'Waiting for input...';
+}
+
+async function checkPassword(pwd) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    const data = await res.json();
+    renderResult(data);
+    statusEl.textContent = "Checked against HaveIBeenPwned's live breach database";
+  } catch (err) {
+    statusEl.textContent = "⚠ Backend not reachable — is FastAPI running on :8000?";
+    console.error(err);
+  }
+}
+
+function renderResult(data) {
+  const v = data.verdict;
+  bar.style.width = Math.min(v.score, 100) + '%';
+  bar.style.background = v.color;
+  label.textContent = v.label;
+  label.style.color = v.color;
+  entropyEl.textContent = `${data.entropy_bits} bits of entropy`;
+
+  crackTimes.innerHTML = Object.entries(data.crack_times).map(([k, val]) => `
+    <div class="crack-row"><span>${formatLabel(k)}</span><span>${val}</span></div>
+  `).join('');
+
+  if (data.patterns_detected.length === 0) {
+    warningsEl.innerHTML = `<li class="no-warnings">✔ No risky patterns detected</li>`;
+  } else {
+    warningsEl.innerHTML = data.patterns_detected.map(w => `<li>✘ ${w}</li>`).join('');
+  }
+
+  if (data.breach_count === -1) {
+    breachSection.innerHTML = `<div class="breach-alert breach-unknown">⚠ Couldn't reach HaveIBeenPwned to verify breach status</div>`;
+  } else if (data.breach_count > 0) {
+    breachSection.innerHTML = `<div class="breach-alert breach-bad">🚨 Found in ${data.breach_count.toLocaleString()} known data breaches — do NOT use this password</div>`;
+  } else {
+    breachSection.innerHTML = `<div class="breach-alert breach-ok">✔ Not found in any known breach database</div>`;
+  }
+}
+
+function formatLabel(key) {
+  return key.replace(/_/g, ' ').replace(/\(.*\)/, m => m);
+}
+</script>
+
+</body>
+</html>
