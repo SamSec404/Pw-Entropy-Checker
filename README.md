@@ -9,6 +9,7 @@
 [![HIBP](https://img.shields.io/badge/HaveIBeenPwned-API-red?style=flat-square)](https://haveibeenpwned.com/API/v3)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](#license)
 [![NIST](https://img.shields.io/badge/NIST-800--63B%20Aligned-blue?style=flat-square)](https://pages.nist.gov/800-63-3/sp800-63b.html)
+[![TryHackMe](https://img.shields.io/badge/TryHackMe-SamSec404-red?style=flat-square&logo=tryhackme&logoColor=white)](https://tryhackme.com/p/SamSec404)
 
 *Shannon entropy scoring · Attack pattern detection · Live breach checking via k-anonymity*
 
@@ -39,7 +40,7 @@ a password like `P@ssw0rd1` ticks every box on a typical checklist, yet
 it's cracked in seconds because it's a well-known substitution pattern
 sitting in every attacker's dictionary.
 
-**PassGuard measures actual resistance to attack**, using the same
+**PwEntropyChecker measures actual resistance to attack**, using the same
 principles real security tooling uses: entropy, pattern analysis, and
 live breach intelligence — not arbitrary checkboxes.
 
@@ -94,8 +95,8 @@ for why that matters.
 ### Installation
 
 ```bash
-git clone https://github.com/<your-username>/passguard.git
-cd passguard/backend
+git clone https://github.com/SamSec404/PwEntropyChecker.git
+cd PwEntropyChecker/backend
 pip install -r requirements.txt
 ```
 
@@ -214,7 +215,7 @@ symbols, periodic rotation) toward:
 - Checking new passwords against **known breach/dictionary lists**
 - Treating a breached password as disqualifying regardless of "complexity"
 
-PassGuard's scoring logic follows this — a long, breached password is
+PwEntropyChecker's scoring logic follows this — a long, breached password is
 capped as weak even if its entropy score looks decent.
 
 </details>
@@ -240,8 +241,8 @@ MIT — free to use, modify, and learn from.
 ## 👤 Author
 
 **Muhammad — SamSec404**
-CS Student · Building [AUXORA Digital Solutions](#) · Cybersecurity & Automation
+CS Student · Cybersecurity & Automation
 
-[GitHub](#) · [LinkedIn](#) · [Portfolio](#)
+[GitHub](https://github.com/SamSec404) · [LinkedIn](https://www.linkedin.com/in/malik-muhammad-sanaullah-050m1y05f48/) · [TryHackMe](https://tryhackme.com/p/SamSec404)
 
 </div>
