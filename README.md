@@ -243,6 +243,8 @@ MIT — free to use, modify, and learn from.
 **Muhammad — SamSec404**
 CS Student · Cybersecurity & Automation
 
-[GitHub](https://github.com/SamSec404) · [LinkedIn](https://www.linkedin.com/in/malik-muhammad-sanaullah-050m1y05f48/) · [TryHackMe](https://tryhackme.com/p/SamSec404)
+[![GitHub](https://img.shields.io/badge/GitHub-SamSec404-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/SamSec404)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Muhammad%20Sanaullah-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/malik-muhammad-sanaullah-050m1y05f48/)
+[![TryHackMe](https://img.shields.io/badge/TryHackMe-SamSec404-212C42?style=for-the-badge&logo=tryhackme&logoColor=red)](https://tryhackme.com/p/SamSec404)
 
 </div>
